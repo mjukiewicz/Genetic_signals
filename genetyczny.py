@@ -1,9 +1,10 @@
-import pandas as pd
+import datetime
 import numpy as np
 import matplotlib.pyplot as plt
+import pandas as pd
 
 numberOfGenes = 32
-numberOfSteps = 100000
+numberOfSteps = 1000
 ind = [4, 8, 16, 32, 64, 128, 256, 512]
 
 
@@ -38,12 +39,17 @@ def mutate():
         indvids[mutateInvid][mutatePoint] = np.random.random()
 
 
-k = 1
+cnt = 1
 for numberOfInvids in ind:
 
     indvids = pd.DataFrame(np.random.rand(numberOfGenes, numberOfInvids))
     wyniki = []
     for i in range(numberOfSteps):
+        print('%.2f percent' % (cnt/(len(ind)*numberOfSteps) * 100)),
+        print('%s, ind:%s, step:%s/%s' % (datetime.datetime.now(),
+                                          numberOfInvids, i, numberOfSteps))
+        cnt += 1
+
         indvids = sorting()
         for j in range(int(numberOfInvids/2)):
             indvids = indvids.T.drop(indvids.T.index[-1]).T
@@ -53,9 +59,7 @@ for numberOfInvids in ind:
             indvids = indvids.append(ch2.T, ignore_index=True).T
         mutate()
         wyniki.append(get_fitness(indvids[0])/numberOfGenes)
-        print(100*i*k/(8*numberOfSteps))
 
-    k += 1
     plt.plot(wyniki, label=numberOfInvids)
     plt.legend()
 plt.show()
