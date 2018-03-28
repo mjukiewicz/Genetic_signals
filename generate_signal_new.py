@@ -1,9 +1,9 @@
 import time
 import numpy as np
-#import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt
 import pandas as pd
 import aseegg as ag
-from math import sqrt
+from math import atan
 from os import listdir
 from os.path import isfile, join
 import scipy.signal as ss
@@ -41,19 +41,19 @@ def Euklides(p,stimSS):
     sumVal1=0
     sumVal2=0
     if stimSS == 14:
-        for shift in range(numberOfLSig):
-            sumVal1+=float(p[0+shift]-p[5+shift])**2
-            sumVal2+=float(p[0+shift]-p[10+shift])**2
+        for shift in range(numberOfLSig-1):
+            sumVal1+=p[0+shift]*180*atan(p[0+shift]/p[5+shift])/np.pi
+            sumVal2+=p[0+shift]*180*atan(p[0+shift]/p[10+shift])/np.pi
     if stimSS == 28:
-        for shift in range(numberOfLSig):
-            sumVal1+=float(p[5+shift]-p[0+shift])**2
-            sumVal2+=float(p[5+shift]-p[10+shift])**2
+        for shift in range(numberOfLSig-1):
+            sumVal1+=p[5+shift]*180*atan(p[5+shift]/p[0+shift])/np.pi
+            sumVal2+=p[5+shift]*180*atan(p[5+shift]/p[10+shift])/np.pi
     if stimSS == 8:
-        for shift in range(numberOfLSig):
-            sumVal1+=float(p[10+shift]-p[0+shift])**2
-            sumVal2+=float(p[10+shift]-p[5+shift])**2
+        for shift in range(numberOfLSig-1):
+            sumVal1+=p[10+shift]*180*atan(p[10+shift]/p[0+shift])/np.pi
+            sumVal2+=p[10+shift]*180*atan(p[10+shift]/p[5+shift])/np.pi
 
-    return sqrt(sumVal1)+sqrt(sumVal2)
+    return sumVal1+sumVal2
 
 def get_fitness(indvid,stimS, EEGSignals):
     p=pd.Series()
@@ -61,10 +61,11 @@ def get_fitness(indvid,stimS, EEGSignals):
         correlaton = np.corrcoef(indvid,EEGSignals.T[i])
         p=p.set_value(i, abs(correlaton[0][1]))
 
-    if checkHighestP(p, stimS):
-        return Euklides(p,stimS)
-    else:
-        return -Euklides(p,stimS)
+    return Euklides(p,stimS)
+#    if checkHighestP(p, stimS):
+#        return Euklides(p,stimS)
+#    else:
+#        return -Euklides(p,stimS)
 
 
 def ch_generate(p1, p2):
@@ -190,14 +191,14 @@ def main(numberOfSteps, numberOfInvids, numberOfMutations):
             for zz in range(numberOfSteps):
 
                 indvids = sorting(s, numberOfInvids, indvids,EEGSignals)
-                start = time.clock()
+                #start = time.clock()
 
                 new_indvids=indvids.T
                 for j in range(int(numberOfInvids/4)):
                     ch = ch_generate(new_indvids[j*2], new_indvids[1+j*2])
                     new_indvids = new_indvids.T.append(ch, ignore_index=True).T
                 indvids=new_indvids
-                print(time.clock()-start)
+                #print(time.clock()-start)
                 indvids=mutate(numberOfMutations, numberOfInvids, indvids)
                 bestValue=get_fitness(indvids[0],s,EEGSignals)
 
@@ -207,22 +208,22 @@ def main(numberOfSteps, numberOfInvids, numberOfMutations):
     #                    i +(stim.index(s)*numberOfSteps), numberOfSteps*numberOfLSig, bestValue))
 
             bestIndvid=bestIndvid.append(indvids[0], ignore_index=True)
-#            plt.subplot(2,1,1)
-#            plt.plot(wyniki, label=s)
-#            plt.legend()
-#            plt.subplot(2,1,2)
-#            #plt.plot(t,indvids[0])
-#            plt.plot(srFit)
+            plt.subplot(2,1,1)
+            plt.plot(wyniki, label=s)
+            plt.legend()
+            plt.subplot(2,1,2)
+            #plt.plot(t,indvids[0])
+            plt.plot(srFit)
 
             print(srFit.iloc[-1])
         classify(bestIndvid,EEGSignals)
         AllEEGSignals.drop(AllEEGSignals.index[0:15], inplace=True)
-#    plt.show()
+    plt.show()
 
 
 #for k in range(20, 510, 60):
 #    print("---------------")
 #    print(k)
 #    start = time.clock()
-main(20,20,20)
+main(100,100,100)
 #    print(time.clock()-start)
