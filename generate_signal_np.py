@@ -21,7 +21,7 @@ learningSetSize = 3
 listOfStim=[14,28,8]
 results=[0,0,0]
 
-rData=prepareData(numberOfGenes, learningSetSize)
+rData=prepareData(numberOfGenes, learningSetSize, 14)
 dataAll = rData.readDataFromFiles()
 perfectSin=rData.createPerfectSin()
 
