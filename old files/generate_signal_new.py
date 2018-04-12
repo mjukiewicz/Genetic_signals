@@ -12,12 +12,11 @@ numberOfGenes = 256
 numberOfLSig = 3
 files=[]
 
-Subj=['SUBJ1','SUBJ2','SUBJ3','SUBJ4'] #jakim cudem czasem pojawia sie minus?
+Subj=['SUBJ2']#,'SUBJ2','SUBJ3','SUBJ4'] #jakim cudem czasem pojawia sie minus?
 path="C:\\Users\\Marcin\\Dropbox\\SSVEP\\Bakardjian\\"
 
 for i in Subj:
     files.extend([i+'\\' + f for f in listdir(path+i) if isfile(join(path+i+'\\',f))])
-
 
 def read_data(filePath):
     data=pd.read_csv(filePath, delimiter=",", engine="python", header=None)
@@ -130,6 +129,7 @@ def compCorrCoef(signal,EEGSignals):
 
 def compCorr(signal,ref):
     result=0
+    print(signal)
     for i in range(0,5):
         corr14, corr28, corr8 = compCorrCoef(signal,ref.T[i])
         if corr14>corr8 and corr14>corr28 :
@@ -148,13 +148,13 @@ def compCorr(signal,ref):
     return result
 
 def classify(bestIndvid,EEGSignals):
-    print("Skuteczność klasyfikacji otrzymanych:", compCorr(bestIndvid.T,EEGSignals))
+    '''print("Skuteczność klasyfikacji otrzymanych:", compCorr(bestIndvid.T,EEGSignals))
     meanSig=pd.concat([pd.DataFrame(EEGSignals[0:numberOfLSig].mean()).T,
                        pd.DataFrame(EEGSignals[5:5+numberOfLSig].mean()).T,
                        pd.DataFrame(EEGSignals[10:10+numberOfLSig].mean()).T,
                        ], ignore_index=True)
     print("Skuteczność klasyfikacji uśrednionych:", compCorr(meanSig.T,EEGSignals))
-
+    '''
     perfectSig=pd.concat([perfectSin14.T, perfectSin28.T, perfectSin8.T], ignore_index=True)
     print("Skuteczność klasyfikacji idealnych:", compCorr(perfectSig.T,EEGSignals))
 
@@ -225,5 +225,5 @@ def main(numberOfSteps, numberOfInvids, numberOfMutations):
 #    print("---------------")
 #    print(k)
 #    start = time.clock()
-main(100,100,100)
+main(10,10,10)
 #    print(time.clock()-start)

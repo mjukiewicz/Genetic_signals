@@ -1,0 +1,22 @@
+def createAdamEve(self,data):
+        firstFamily = np.empty((0, numberOfGenes))
+        for i in range(0,3):
+            for j in range(i,3):
+                firstFamily=np.append(firstFamily, [np.add(data[i],data[j])/2], axis=0)
+        firstFamily=np.append(firstFamily, [np.mean(data, axis=0)], axis=0)
+        return firstFamily
+
+    def createPopulation1(self,data,InitialPopSize):
+        family=createAdamEve(data)
+        familySize=family.shape[0]
+        roundPopSize=ceil((InitialPopSize-familySize)/familySize)
+        while family.shape[0]<=InitialPopSize:
+            family=np.append(family,family,axis=0)
+        if InitialPopSize!=family.shape[0]:
+            family=family[:InitialPopSize]
+        return family
+
+
+import scipy.signal as ss
+        '''ch = np.vstack([ss.medfilt(ch1, kernel_size=5),
+                        ss.medfilt(ch2, kernel_size=5)])'''
