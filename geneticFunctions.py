@@ -1,4 +1,4 @@
-
+from prepareData import prepareData
 import numpy as np
 from math import ceil, atan
 
@@ -24,6 +24,11 @@ class geneticFunctions(object):
             for j in range(i,3):
                 firstFamily=np.append(firstFamily, [np.add(data[i],data[j])/2], axis=0)
         firstFamily=np.append(firstFamily, [np.mean(data, axis=0)], axis=0)
+        t=np.linspace(0,1,self.numberOfGenes)
+        perfectSin=np.stack(((np.sin(2*np.pi*t*14)+1)/2,
+                             (np.sin(2*np.pi*t*28)+1)/2,
+                             (np.sin(2*np.pi*t*8)+1)/2))
+        firstFamily=np.append(firstFamily, perfectSin, axis=0)
         return firstFamily
 
     def createPopulation(self,data):
@@ -97,9 +102,9 @@ class geneticFunctions(object):
         bestIndvidsFitness = np.empty((3, self.numberOfSteps))
         for stim in range(len(listOfStim)):
             indvids=self.createPopulation(dataAll[0:self.learningSetSize])
-            indvids=self.mutate(4000, indvids)
+            #indvids=self.mutate(4000, indvids)
             for step in range(self.numberOfSteps):
                 indvids=self.generation(indvids,dataAll, listOfStim[stim])
-                bestIndvidsFitness[stim][step]=self.get_fitness(indvids[0],listOfStim[stim], dataAll[0:15])
+                bestIndvidsFitness[stim][step]=self.get_fitness(indvids[0],listOfStim[stim], dataAll)
             bestIndvids[stim] = indvids[0]
         return bestIndvids, bestIndvidsFitness

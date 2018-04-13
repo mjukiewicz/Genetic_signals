@@ -1,4 +1,8 @@
 import numpy as np
+import itertools
+from prepareData import prepareData
+from geneticFunctions import geneticFunctions
+#import matplotlib.pyplot as plt
 
 def compCorrCoefs(signal,EEGSignals):
     correlaton14 = abs(np.corrcoef(signal[0],EEGSignals))
@@ -26,7 +30,35 @@ def classifyPrintAndCompute(bestIndvid,perfectSig, meanSig, EEGSignals):
     obtainGA=compAcc(bestIndvid,EEGSignals)
     obtainMean=compAcc(meanSig,EEGSignals)
     obtainPerfect=compAcc(perfectSig,EEGSignals)
-    print("Skuteczność klasyfikacji otrzymanych:", obtainGA)
-    print("Skuteczność klasyfikacji uśrednionych:", obtainMean)
-    print("Skuteczność klasyfikacji idealnych:", obtainPerfect)
+    print("Skutecznosc klasyfikacji otrzymanych:", obtainGA)
+    print("Skutecznosc klasyfikacji usrednionych:", obtainMean)
+    print("Skutecznosc klasyfikacji idealnych:", obtainPerfect)
     return obtainGA, obtainMean, obtainPerfect
+
+def main(numberOfSteps, numberOfInvids, numberOfMutations,meanSig, dataCut,numberOfGenes,learningSetSize,listOfStim,perfectSin):
+    results=[0,0,0]
+    oGenetic=geneticFunctions(numberOfGenes, numberOfSteps, numberOfInvids, learningSetSize, numberOfMutations)
+    bestIndvids, bestIndvidsFitness = oGenetic.main(dataCut, listOfStim)
+    results[0], results[1], results[2] = classifyPrintAndCompute(bestIndvids,perfectSin, meanSig, dataCut)
+    return results
+
+def crossValidationSet(numberOfGenes, learningSetSize, dataAll, rData,listOfStim):
+    results=[0,0,0]
+    dataCut = np.empty((15, numberOfGenes))
+    test = np.arange(0,5)
+    for sub in range(1):
+        for subset in itertools.combinations(test, learningSetSize):
+            subset=list(subset)
+            for i in test:
+                if not i in subset:
+                    subset.append(i)
+            trials=np.concatenate((np.add(subset,0+sub*15), np.concatenate((np.add(subset,5+sub*15), np.add(subset,10+sub*15)), axis=0)), axis=0)
+            for i in range(len(trials)):
+                dataCut[i]=dataAll[trials[i]]
+            meanSig=rData.createMeanSig(dataCut)
+            perfectSin=rData.createPerfectSin()
+            resultsClass = main(100,120,100,meanSig, dataCut,numberOfGenes,learningSetSize,listOfStim,perfectSin)
+            for i in range(len(resultsClass)):
+                results[i]+=resultsClass[i]
+    for i in results:
+        print(100*i/40)
