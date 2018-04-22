@@ -1,4 +1,4 @@
-from prepareData import prepareData
+#from prepareData import prepareData
 import numpy as np
 from math import ceil, atan
 

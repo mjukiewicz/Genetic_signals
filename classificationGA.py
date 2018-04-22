@@ -1,64 +1,131 @@
 import numpy as np
 import itertools
-from prepareData import prepareData
+#from prepareData import prepareData
 from geneticFunctions import geneticFunctions
+from sklearn.cross_decomposition import CCA
 #import matplotlib.pyplot as plt
+from datetime import datetime
 
-def compCorrCoefs(signal,EEGSignals):
-    correlaton14 = abs(np.corrcoef(signal[0],EEGSignals))
-    correlaton28 = abs(np.corrcoef(signal[1],EEGSignals))
-    correlaton8 = abs(np.corrcoef(signal[2],EEGSignals))
-    return correlaton14[0][1], correlaton28[0][1], correlaton8[0][1]
 
-def compAcc(signal,ref):
-    result=0
-    for i in range(3,5):
-        corr14, corr28, corr8 = compCorrCoefs(signal,ref[i])
-        if corr14>corr8 and corr14>corr28 :
-            result+=1
-    for i in range(8,10):
-        corr14, corr28, corr8 = compCorrCoefs(signal,ref[i])
-        if corr28>corr8 and corr28>corr14:
-            result+=1
-    for i in range(13,15):
-        corr14, corr28, corr8 = compCorrCoefs(signal,ref[i])
-        if corr8>corr14 and corr8>corr28:
-            result+=1
-    return result
+class processing(object):
+    def __init__(self,numberOfGenes, learningSetSize, listOfStim, data14,
+                data22,data27,numberOfSteps, numberOfInvids, numberOfMutations, numberOfSubjects):
+        self.numberOfGenes = numberOfGenes
+        self.learningSetSize = learningSetSize
+        self.listOfStim=listOfStim
+        self.data14=data14
+        self.data22=data22
+        self.data27=data27
+        self.numberOfSteps = numberOfSteps
+        self.numberOfInvids = numberOfInvids
+        self.numberOfMutations = numberOfMutations
+        self.numberOfSubjects=numberOfSubjects
 
-def classifyPrintAndCompute(bestIndvid,perfectSig, meanSig, EEGSignals):
-    obtainGA=compAcc(bestIndvid,EEGSignals)
-    obtainMean=compAcc(meanSig,EEGSignals)
-    obtainPerfect=compAcc(perfectSig,EEGSignals)
-    print("Skutecznosc klasyfikacji otrzymanych:", obtainGA)
-    print("Skutecznosc klasyfikacji usrednionych:", obtainMean)
-    print("Skutecznosc klasyfikacji idealnych:", obtainPerfect)
-    return obtainGA, obtainMean, obtainPerfect
+    def crossValidation(self):
+        dataCut14 = np.empty((15, self.numberOfGenes))
+        dataCut22 = np.empty((15, self.numberOfGenes))
+        dataCut27 = np.empty((15, self.numberOfGenes))
+        trials=self.createSubsetsForCV()
+        for sub in range(self.numberOfSubjects):
+            results=[0,0,0]
+            for subset in range(10):
+                for i in range(15):
+                    dataCut14[i]=self.data14[trials[subset+(sub*10)][i]]
+                    dataCut22[i]=self.data22[trials[subset+(sub*10)][i]]
+                    dataCut27[i]=self.data27[trials[subset+(sub*10)][i]]
+                oGenetic=geneticFunctions(self.numberOfGenes, self.numberOfSteps, self.numberOfInvids, self.learningSetSize, self.numberOfMutations)
+                bestIndvids14, bestIndvidsFitness14 = oGenetic.main(dataCut14, self.listOfStim)
+                oGenetic=geneticFunctions(self.numberOfGenes, self.numberOfSteps, self.numberOfInvids, self.learningSetSize, self.numberOfMutations)
+                bestIndvids22, bestIndvidsFitness22 = oGenetic.main(dataCut22, self.listOfStim)
+                oGenetic=geneticFunctions(self.numberOfGenes, self.numberOfSteps, self.numberOfInvids, self.learningSetSize, self.numberOfMutations)
+                bestIndvids27, bestIndvidsFitness27 = oGenetic.main(dataCut27, self.listOfStim)
 
-def main(numberOfSteps, numberOfInvids, numberOfMutations,meanSig, dataCut,numberOfGenes,learningSetSize,listOfStim,perfectSin):
-    results=[0,0,0]
-    oGenetic=geneticFunctions(numberOfGenes, numberOfSteps, numberOfInvids, learningSetSize, numberOfMutations)
-    bestIndvids, bestIndvidsFitness = oGenetic.main(dataCut, listOfStim)
-    results[0], results[1], results[2] = classifyPrintAndCompute(bestIndvids,perfectSin, meanSig, dataCut)
-    return results
+                learningSet=self.createLearningSets(bestIndvids14, bestIndvids22, bestIndvids27)
+                results=np.add(results,self.classification(learningSet, np.vstack([dataCut14,dataCut22,dataCut27])))
+            self.writeResultsToFile(results, sub, self.numberOfSteps, self.numberOfInvids, self.numberOfMutations)
 
-def crossValidationSet(numberOfGenes, learningSetSize, dataAll, rData,listOfStim):
-    results=[0,0,0]
-    dataCut = np.empty((15, numberOfGenes))
-    test = np.arange(0,5)
-    for sub in range(1):
-        for subset in itertools.combinations(test, learningSetSize):
-            subset=list(subset)
-            for i in test:
-                if not i in subset:
-                    subset.append(i)
-            trials=np.concatenate((np.add(subset,0+sub*15), np.concatenate((np.add(subset,5+sub*15), np.add(subset,10+sub*15)), axis=0)), axis=0)
-            for i in range(len(trials)):
-                dataCut[i]=dataAll[trials[i]]
-            meanSig=rData.createMeanSig(dataCut)
-            perfectSin=rData.createPerfectSin()
-            resultsClass = main(100,120,100,meanSig, dataCut,numberOfGenes,learningSetSize,listOfStim,perfectSin)
-            for i in range(len(resultsClass)):
-                results[i]+=resultsClass[i]
-    for i in results:
-        print(100*i/40)
+    def createLearningSets(self, data1, data2, data3):
+        dataOut1=np.vstack([data1[0],data2[0],data3[0]])
+        dataOut2=np.vstack([data1[1],data2[1],data3[1]])
+        dataOut3=np.vstack([data1[2],data2[2],data3[2]])
+        return np.vstack([dataOut1, dataOut2, dataOut3])
+
+    def createSubsetsForCV(self):
+        allTrials=np.empty((0,15))
+        setOfNums = np.arange(0,5)
+        for sub in range(self.numberOfSubjects):
+            for subset in itertools.combinations(setOfNums, self.learningSetSize):
+                subset=list(subset)
+                for i in setOfNums:
+                    if not i in subset:
+                        subset.append(i)
+                trials=np.concatenate((np.add(subset,0+sub*15),
+                                       np.concatenate((np.add(subset,5+sub*15),
+                                                       np.add(subset,10+sub*15)),
+                                                      axis=0)), axis=0)
+                allTrials=np.vstack([allTrials,trials])
+        return allTrials.astype(int)
+
+    def classification(self,learningSet,EEGSignals):
+        meanSig=self.createMeanSig(EEGSignals)
+        perfectSig=self.createPerfectSin()
+
+        obtainGA=self.compAcc(learningSet,EEGSignals)
+        obtainMean=self.compAcc(meanSig,EEGSignals)
+        obtainPerfect=self.compAcc(perfectSig,EEGSignals)
+        #print("Skutecznosc klasyfikacji otrzymanych:", obtainGA)
+        #print("Skutecznosc klasyfikacji usrednionych:", obtainMean)
+        #print("Skutecznosc klasyfikacji idealnych:", obtainPerfect)
+        return np.array([obtainPerfect, obtainPerfect, obtainPerfect])
+
+    def compCorrCoefs(self,learningSet,EEGSignals):
+        n_components = 1
+        cca = CCA(n_components)
+
+        cca.fit(learningSet[0:3].T,EEGSignals.T)
+        U, V = cca.transform(learningSet[0:3].T,EEGSignals.T)
+        correlation14 = abs(np.corrcoef(U.T, V.T)[0, 1])
+
+        cca.fit(learningSet[3:6].T,EEGSignals.T)
+        U, V = cca.transform(learningSet[3:6].T,EEGSignals.T)
+        correlation28 = abs(np.corrcoef(U.T, V.T)[0, 1])
+
+        cca.fit(learningSet[6:9].T,EEGSignals.T)
+        U, V = cca.transform(learningSet[6:9].T,EEGSignals.T)
+        correlation8 = abs(np.corrcoef(U.T, V.T)[0, 1])
+
+        return correlation14, correlation28, correlation8
+
+    def compAcc(self,learningSet,EEGSignals):
+        result=0
+        for i in range(3,5):
+            corr14, corr28, corr8 = self.compCorrCoefs(learningSet,np.vstack((EEGSignals[i],EEGSignals[i+15],EEGSignals[i+30])))
+            if corr14 == max([corr14, corr28, corr8]):
+                result+=1
+        for i in range(8,10):
+            corr14, corr28, corr8 = self.compCorrCoefs(learningSet,np.vstack((EEGSignals[i],EEGSignals[i+15],EEGSignals[i+30])))
+            if corr28 == max([corr14, corr28, corr8]):
+                result+=1
+        for i in range(13,15):
+            corr14, corr28, corr8 = self.compCorrCoefs(learningSet,np.vstack((EEGSignals[i],EEGSignals[i+15],EEGSignals[i+30])))
+            if corr8 == max([corr14, corr28, corr8]):
+                result+=1
+        return result
+
+
+    def createPerfectSin(self):
+        t=np.linspace(0,1,self.numberOfGenes)
+        return np.vstack((np.tile(np.sin(2*np.pi*t*14),(3,1)),
+                          np.tile(np.sin(2*np.pi*t*28),(3,1)),
+                          np.tile(np.sin(2*np.pi*t*8),(3,1))))
+
+    def createMeanSig(self, signals):
+        meanSig=np.empty((0,self.numberOfGenes))
+        for i in range(9):
+            meanSig=np.append(meanSig, [np.mean(signals[5*i:5*i+self.learningSetSize],axis=0)], axis=0)
+        return meanSig
+
+    def writeResultsToFile(self,results, sub, numberOfSteps, numberOfInvids, numberOfMutations):
+        textFile = open('results.txt', 'a')
+        textFile.write(str(datetime.now())+", "+ str(numberOfSteps)+", "+str(numberOfInvids)+", "+str(numberOfMutations)+", "+str(sub)+", "+str(results[0])+", "+str(results[1])+", "+str(results[2])+'\n')
+        textFile.close()
