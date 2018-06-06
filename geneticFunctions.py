@@ -1,5 +1,6 @@
 #from prepareData import prepareData
 import numpy as np
+import scipy.signal as ss
 from math import ceil, atan
 
 class geneticFunctions(object):
@@ -25,10 +26,12 @@ class geneticFunctions(object):
                 firstFamily=np.append(firstFamily, [np.add(data[i],data[j])/2], axis=0)
         firstFamily=np.append(firstFamily, [np.mean(data, axis=0)], axis=0)
         t=np.linspace(0,1,self.numberOfGenes)
+
         perfectSin=np.stack(((np.sin(2*np.pi*t*14)+1)/2,
                              (np.sin(2*np.pi*t*28)+1)/2,
                              (np.sin(2*np.pi*t*8)+1)/2))
         firstFamily=np.append(firstFamily, perfectSin, axis=0)
+        
         return firstFamily
 
     def createPopulation(self,data):
@@ -78,6 +81,7 @@ class geneticFunctions(object):
             fitness = np.append(fitness,self.get_fitness(indvids[i],stim, data))
         indvids=np.column_stack([indvids,fitness])
         indvids=np.array(sorted(indvids, key=lambda x :x[-1], reverse=True))
+        #print(indvids.T[-1])
         indvids=np.delete(indvids, -1, axis=1)
         return indvids
 
@@ -85,7 +89,9 @@ class geneticFunctions(object):
         crossPoint1 = np.random.randint(1, self.numberOfGenes)
         ch1=np.concatenate((p1[0:crossPoint1], p2[crossPoint1:self.numberOfGenes]))
         ch2=np.concatenate((p2[0:crossPoint1], p1[crossPoint1:self.numberOfGenes]))
-        ch = np.vstack([ch1,ch2])
+        #ch = np.vstack([ch1,ch2])
+        ch = np.vstack([ss.medfilt(ch1, kernel_size=5),
+                        ss.medfilt(ch2, kernel_size=5)])
         return ch
 
     def generation(self,indvids,dataAll,stim):

@@ -9,7 +9,7 @@ class prepareData(object):
          self.electrodeNumber=electrodeNumber
          self.notchCutOff1=49
          self.notchCutOff2=51
-         self.bandpassCutOff1=1
+         self.bandpassCutOff1=5
          self.bandpassCutOff2=50
          self.numberOfGenes=numberOfGenes
          self.learningSetSize = learningSetSize

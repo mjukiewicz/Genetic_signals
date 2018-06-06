@@ -1,0 +1,1 @@
+step: 120, fitness: 4.359405, time: 25.19, mutations:10, population:10step: 113, fitness: 4.28705, time: 21.94, mutations:20, population:10

@@ -3,7 +3,7 @@ import itertools
 #from prepareData import prepareData
 from geneticFunctions import geneticFunctions
 from sklearn.cross_decomposition import CCA
-#import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt
 from datetime import datetime
 
 
@@ -41,7 +41,7 @@ class processing(object):
                 bestIndvids27, bestIndvidsFitness27 = oGenetic.main(dataCut27, self.listOfStim)
 
                 learningSet=self.createLearningSets(bestIndvids14, bestIndvids22, bestIndvids27)
-                results=np.add(results,self.classification(learningSet, np.vstack([dataCut14,dataCut22,dataCut27])))
+                results=np.add(results,self.classification(learningSet, np.vstack([dataCut14,dataCut22,dataCut27]),subset))
             self.writeResultsToFile(results, sub, self.numberOfSteps, self.numberOfInvids, self.numberOfMutations)
 
     def createLearningSets(self, data1, data2, data3):
@@ -66,21 +66,43 @@ class processing(object):
                 allTrials=np.vstack([allTrials,trials])
         return allTrials.astype(int)
 
-    def classification(self,learningSet,EEGSignals):
+    def classification(self,learningSet,EEGSignals,subset):
         meanSig=self.createMeanSig(EEGSignals)
         perfectSig=self.createPerfectSin()
 
+        plt.figure()
+        for i in range(9):
+            plt.subplot(9,1,i+1)
+            plt.plot(learningSet[i])
+        plt.savefig(str(subset)+".png")
+        #print(np.corrcoef(learningSet[6],learningSet[7])[0][1])
+        #print(np.corrcoef(learningSet[7],learningSet[8])[0][1])
+        #print(np.corrcoef(learningSet[6],learningSet[8])[0][1])
         obtainGA=self.compAcc(learningSet,EEGSignals)
         obtainMean=self.compAcc(meanSig,EEGSignals)
         obtainPerfect=self.compAcc(perfectSig,EEGSignals)
         #print("Skutecznosc klasyfikacji otrzymanych:", obtainGA)
         #print("Skutecznosc klasyfikacji usrednionych:", obtainMean)
         #print("Skutecznosc klasyfikacji idealnych:", obtainPerfect)
-        return np.array([obtainPerfect, obtainPerfect, obtainPerfect])
+        #return np.array([obtainGA, obtainGA, obtainGA])
+        return np.array([obtainGA, obtainMean, obtainPerfect])
 
     def compCorrCoefs(self,learningSet,EEGSignals):
         n_components = 1
         cca = CCA(n_components)
+        #print(EEGSignals.shape)
+        '''
+        correlation14 = abs(np.corrcoef(np.mean(learningSet[0:3].T, axis=1),np.mean(EEGSignals.T, axis=1))[0, 1])
+        correlation28 = abs(np.corrcoef(np.mean(learningSet[3:6].T, axis=1),np.mean(EEGSignals.T, axis=1))[0, 1])
+        correlation8 = abs(np.corrcoef(np.mean(learningSet[6:9].T, axis=1),np.mean(EEGSignals.T, axis=1))[0, 1])
+
+        print(learningSet[0][0],learningSet[1][0],learningSet[2][0])
+        for i in range(0,9,3):
+            print(abs(np.corrcoef(learningSet[i].T,EEGSignals[int(i/3)].T)[0, 1]),
+                  abs(np.corrcoef(learningSet[i+1].T,EEGSignals[int(i/3)].T)[0, 1]),
+                  abs(np.corrcoef(learningSet[i+2].T,EEGSignals[int(i/3)].T)[0, 1]))
+        print("---")
+        '''
 
         cca.fit(learningSet[0:3].T,EEGSignals.T)
         U, V = cca.transform(learningSet[0:3].T,EEGSignals.T)
@@ -93,7 +115,7 @@ class processing(object):
         cca.fit(learningSet[6:9].T,EEGSignals.T)
         U, V = cca.transform(learningSet[6:9].T,EEGSignals.T)
         correlation8 = abs(np.corrcoef(U.T, V.T)[0, 1])
-
+        
         return correlation14, correlation28, correlation8
 
     def compAcc(self,learningSet,EEGSignals):
