@@ -1,0 +1,43 @@
+step: 4840, fitness: 0.707071, time: 821.11, mutations:10, population:10
+step: 10000, fitness: 1.745586, time: 1788.47, mutations:20, population:10
+step: 10000, fitness: 3.185003, time: 1796.92, mutations:50, population:10
+step: 10000, fitness: 3.995536, time: 2021.18, mutations:70, population:10
+step: 10000, fitness: 4.507488, time: 1785.97, mutations:100, population:10
+step: 10000, fitness: 5.073002, time: 13826.98, mutations:150, population:10
+step: 10000, fitness: 5.412686, time: 1763.44, mutations:200, population:10
+step: 10000, fitness: 5.781649, time: 1540.97, mutations:300, population:10
+step: 3252, fitness: 0.87413, time: 919.57, mutations:10, population:20
+step: 3801, fitness: 0.712828, time: 1485.15, mutations:20, population:20
+step: 10000, fitness: 1.934503, time: 3241.61, mutations:50, population:20
+step: 10000, fitness: 2.271927, time: 2746.59, mutations:70, population:20
+step: 10000, fitness: 2.892984, time: 38113.19, mutations:100, population:20
+step: 10000, fitness: 3.861634, time: 2758.24, mutations:150, population:20
+step: 10000, fitness: 4.18572, time: 5179.11, mutations:200, population:20
+step: 10000, fitness: 4.845987, time: 3445.72, mutations:300, population:20
+step: 2662, fitness: 1.171904, time: 2274.88, mutations:10, population:50
+step: 3196, fitness: 0.91436, time: 2522.86, mutations:20, population:50
+step: 4125, fitness: 0.637986, time: 3725.39, mutations:50, population:50
+step: 10000, fitness: 0.776564, time: 7517.59, mutations:70, population:50
+step: 10000, fitness: 1.335955, time: 18878.32, mutations:100, population:50
+step: 3049, fitness: 1.107774, time: 5003.04, mutations:10, population:100
+step: 3246, fitness: 1.065704, time: 5090.2, mutations:20, population:100
+step: 3648, fitness: 0.705742, time: 5388.02, mutations:50, population:100
+step: 3873, fitness: 0.441206, time: 28737.75, mutations:70, population:100
+step: 3750, fitness: 0.456896, time: 45652.98, mutations:100, population:100
+step: 10000, fitness: 0.813786, time: 15887.14, mutations:150, population:100
+stim: stim: 28, step: 1567, fitness: 3.20793, time: 513.09, mutations:10, population:10
+stim: 14, step: 888, fitness: 3.576149, time: 306.92, mutations:10, population:10
+stim: 28, step: 1356, fitness: 3.195879, time: 557.71, mutations:10, population:10
+stim: 8, step: 958, fitness: 3.574227, time: 397.03, mutations:10, population:10
+stim: 14, step: 514, fitness: 4.186605, time: 119.52, mutations:10, population:10
+stim: 28, step: 511, fitness: 4.892841, time: 114.11, mutations:10, population:10
+stim: 8, step: 326, fitness: 4.520775, time: 64.88, mutations:10, population:10
+stim: 14, step: 504, fitness: 4.066574, time: 134.68, mutations:10, population:10
+stim: 14, step: 674, fitness: 3.780408, time: 164.37, mutations:10, population:10
+stim: 28, step: 689, fitness: 4.595258, time: 234.23, mutations:10, population:10
+stim: 8, step: 497, fitness: 4.099627, time: 188.53, mutations:10, population:10
+stim: 14, step: 7536, fitness: 2.369934, time: 2444.41, mutations:10, population:10
+stim: 28, step: 2818, fitness: 2.764112, time: 687.37, mutations:10, population:10
+stim: 8, step: 2008, fitness: 2.967515, time: 537.06, mutations:10, population:10
+stim: 14, step: 3126, fitness: 2.586227, time: 638.37, mutations:10, population:10
+stim: 28, step: 1983, fitness: 3.067593, time: 357.48, mutations:10, population:10

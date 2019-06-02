@@ -41,19 +41,3 @@ class prepareData(object):
         maxSignal=signal.max()
         signal=(signal-minSignal)/(maxSignal-minSignal)
         return signal
-
-    def createPopulation(self, stim, populationSize):
-        base = np.empty((4, self.seconds*self.fs))
-        perfect = np.empty((self.seconds*self.fs,populationSize,4))
-
-        t=np.linspace(0,self.seconds,self.fs)
-        base[0,:]=(np.sin(2*np.pi*stim*t)+1)/2;
-        base[1,:]=(np.cos(2*np.pi*stim*t)+1)/2;
-        base[2,:]=(np.sin(4*np.pi*stim*t)+1)/2;
-        base[3,:]=(np.cos(4*np.pi*stim*t)+1)/2;
-
-        base=base.T
-        for i in range(populationSize):
-            perfect[:,i,:]=base;
-
-        return perfect
